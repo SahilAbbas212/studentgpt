@@ -14,15 +14,6 @@ from app.services.parser_service import (
     parse_pptx
 )
 
-from app.ai.embedding_service import (
-    create_embedding,
-    chunk_text
-)
-
-from app.ai.pinecone_service import (
-    index
-)
-
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
@@ -93,36 +84,6 @@ async def upload_file(
                 status_code=400,
                 detail="No text extracted from file"
             )
-
-        chunks = chunk_text(
-            extracted_text
-        )
-
-        vectors = []
-
-        for i, chunk in enumerate(chunks):
-
-            embedding = create_embedding(
-                chunk
-            )
-
-            vectors.append(
-                {
-                    "id":
-                    f"{file.filename}-{i}",
-
-                    "values":
-                    embedding,
-
-                    "metadata": {
-                        "text": chunk
-                    }
-                }
-            )
-
-        index.upsert(
-            vectors=vectors
-        )
 
         return {
             "filename": file.filename,
