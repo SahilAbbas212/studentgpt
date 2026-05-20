@@ -9,8 +9,6 @@ python-multipart
 groq
 google-generativeai
 pinecone
-sentence-transformers
-langchain
 pymupdf
 python-pptx
 python-docx
