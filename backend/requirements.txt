@@ -13,3 +13,4 @@ python-pptx
 python-docx
 bcrypt==4.0.1
 sentence-transformers
+numpy<2.0
