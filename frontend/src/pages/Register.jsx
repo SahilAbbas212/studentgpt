@@ -1,45 +1,52 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Added icons
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { registerUser } from "../api/authApi";
 
 function Register() {
   const navigate = useNavigate();
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
-  // State for toggling password visibility
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
-
+    setError("");
+    setLoading(true);
     try {
       await registerUser(name, email, password);
       alert("Registration successful! Please login.");
       navigate("/login");
     } catch (error) {
-      alert("Registration failed. Email might already exist.");
+      const msg = error?.response?.data?.detail || "Registration failed. Try a different email.";
+      setError(msg);
       console.log(error);
     }
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 shadow-2xl">
-        
+
         <h1 className="text-4xl font-bold text-white text-center mb-2">
           StudentGPT
         </h1>
-
         <p className="text-gray-300 text-center mb-6">
           Create Your Account
         </p>
 
+        {/* ✅ Error message */}
+        {error && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-sm text-center">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleRegister} className="space-y-5">
-          {/* NAME */}
           <div>
             <label className="block text-gray-300 mb-2">Name</label>
             <input
@@ -52,7 +59,6 @@ function Register() {
             />
           </div>
 
-          {/* EMAIL */}
           <div>
             <label className="block text-gray-300 mb-2">Email</label>
             <input
@@ -65,7 +71,6 @@ function Register() {
             />
           </div>
 
-          {/* PASSWORD WITH EYE TOGGLE */}
           <div>
             <label className="block text-gray-300 mb-2">Password</label>
             <div className="relative">
@@ -87,18 +92,17 @@ function Register() {
             </div>
           </div>
 
-          {/* REGISTER BUTTON */}
           <button
             type="submit"
-            className="w-full py-3 rounded-xl bg-blue-500 hover:bg-blue-600 transition text-white font-semibold shadow-lg shadow-blue-500/20"
+            disabled={loading}
+            className="w-full py-3 rounded-xl bg-blue-500 hover:bg-blue-600 transition text-white font-semibold shadow-lg shadow-blue-500/20 disabled:opacity-50"
           >
-            Register
+            {loading ? "Registering..." : "Register"}
           </button>
 
-          {/* LOGIN LINK */}
           <p className="text-center text-gray-400 text-sm mt-4">
             Already have an account?{" "}
-            <span 
+            <span
               onClick={() => navigate("/login")}
               className="text-blue-400 cursor-pointer hover:underline"
             >
