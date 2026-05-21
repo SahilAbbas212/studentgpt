@@ -1,24 +1,16 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
 from jose import jwt
 from pydantic import BaseModel
+import bcrypt
 import logging
 
 from app.database import get_db
 from app.models.user import User
 
 router = APIRouter()
-
 SECRET_KEY = "studentgptsecret"
 ALGORITHM = "HS256"
-
-# ✅ Fixed — removed bcrypt__rounds which causes the 72 byte error
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
-
 logger = logging.getLogger(__name__)
 
 class RegisterRequest(BaseModel):
@@ -30,101 +22,65 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(
+        password.strip()[:50].encode('utf-8'),
+        bcrypt.gensalt()
+    ).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(
+        password.strip()[:50].encode('utf-8'),
+        hashed.encode('utf-8')
+    )
+
 def create_token(data: dict):
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 @router.post("/register")
 def register(data: RegisterRequest, db: Session = Depends(get_db)):
     try:
-        existing_user = db.query(User).filter(
-            User.email == data.email
+        existing = db.query(User).filter(
+            User.email == data.email.strip().lower()
         ).first()
-
-        if existing_user:
-            raise HTTPException(
-                status_code=400,
-                detail="Email already exists"
-            )
-
-        # ✅ trim + limit to 50 chars to avoid bcrypt 72 byte issue
-        password = str(data.password).strip()[:50]
-
-        if len(password) < 4:
-            raise HTTPException(
-                status_code=400,
-                detail="Password must be at least 4 characters"
-            )
-
-        hashed_password = pwd_context.hash(password)
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already exists")
 
         new_user = User(
-            name=str(data.name).strip(),
-            email=str(data.email).strip().lower(),
-            password=hashed_password
+            name=data.name.strip(),
+            email=data.email.strip().lower(),
+            password=hash_password(data.password)
         )
-
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-
-        logger.info(f"New user registered: {new_user.email}")
         return {"message": "User registered successfully"}
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Register error: {str(e)}")
         db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Registration failed: {str(e)}"
-        )
+        logger.error(f"Register error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     try:
-        email = str(data.email).strip().lower()
-        # ✅ same trim + limit as register
-        password = str(data.password).strip()[:50]
-
         user = db.query(User).filter(
-            User.email == email
+            User.email == data.email.strip().lower()
         ).first()
 
-        if not user:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid credentials"
-            )
+        if not user or not verify_password(data.password, user.password):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        valid = pwd_context.verify(password, user.password)
-
-        if not valid:
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid credentials"
-            )
-
-        token = create_token({
-            "user_id": user.id,
-            "email": user.email
-        })
-
-        logger.info(f"User logged in: {user.email}")
+        token = create_token({"user_id": user.id, "email": user.email})
         return {
             "token": token,
-            "user": {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email
-            }
+            "user": {"id": user.id, "name": user.name, "email": user.email}
         }
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Login error: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Login failed: {str(e)}"
-        )
+        logger.error(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

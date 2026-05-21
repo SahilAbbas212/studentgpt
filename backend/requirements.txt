@@ -4,7 +4,6 @@ python-dotenv
 sqlalchemy
 psycopg2-binary
 python-jose[cryptography]
-passlib[bcrypt]==1.7.4
 python-multipart
 groq
 google-generativeai
