@@ -10,6 +10,6 @@ google-generativeai
 pinecone-client
 pymupdf
 python-pptx
-docx
+python-docx
 bcrypt==4.0.1
 sentence-transformers
