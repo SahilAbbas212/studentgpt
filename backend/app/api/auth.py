@@ -23,16 +23,19 @@ class LoginRequest(BaseModel):
     password: str
 
 def hash_password(password: str) -> str:
-    return bcrypt.hashpw(
-        password.strip()[:50].encode('utf-8'),
-        bcrypt.gensalt()
-    ).decode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
 
 def verify_password(password: str, hashed: str) -> bool:
-    return bcrypt.checkpw(
-        password.strip()[:50].encode('utf-8'),
-        hashed.encode('utf-8')
-    )
+    try:
+        return bcrypt.checkpw(
+            password.encode('utf-8'),
+            hashed.encode('utf-8')
+        )
+    except Exception as e:
+        logger.error(f"Password verify error: {e}")
+        return False
 
 def create_token(data: dict):
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
@@ -70,7 +73,10 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
             User.email == data.email.strip().lower()
         ).first()
 
-        if not user or not verify_password(data.password, user.password):
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        if not verify_password(data.password, user.password):
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
         token = create_token({"user_id": user.id, "email": user.email})
