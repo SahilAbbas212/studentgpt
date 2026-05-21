@@ -33,7 +33,11 @@ function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await API.get("/api/analytics/");
+        // ✅ Fixed — added missing API call
+        const token = localStorage.getItem("token");
+        const res = await API.get("/analytics/", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setStats(res.data);
       } catch (err) {
         console.error("Failed to load stats", err);
@@ -158,10 +162,7 @@ function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-10 relative overflow-hidden rounded-3xl p-8 md:p-10 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none"
         >
-          {/* TOP ACCENT */}
           <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600" />
-
-          {/* BG GLOW */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 dark:bg-cyan-500/10 blur-[80px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 dark:bg-purple-500/10 blur-[80px] rounded-full pointer-events-none" />
 
@@ -175,11 +176,10 @@ function Dashboard() {
                 {timeOfDay} 👋
               </h1>
               <p className="text-slate-500 dark:text-slate-400 text-base">
-                {user?.username || user?.email || "Student"} — Your AI academic OS is ready.
+                {user?.name || user?.email || "Student"} — Your AI academic OS is ready.
               </p>
             </div>
 
-            {/* QUICK STATS MINI */}
             <div className="flex gap-4 flex-wrap">
               {[
                 { icon: <FaTrophy />, value: `${stats.avg_score}%`, label: "Score", color: "text-yellow-500" },
@@ -209,8 +209,6 @@ function Dashboard() {
               whileHover={{ y: -4, scale: 1.02 }}
               className={`p-5 rounded-2xl border ${card.bg} ${card.border} shadow-sm dark:shadow-none relative overflow-hidden`}
             >
-              <div className="absolute top-0 right-0 w-20 h-20 opacity-5 dark:opacity-10 rounded-full blur-2xl pointer-events-none"
-                style={{ background: "currentColor" }} />
               <div className="flex items-center justify-between mb-4">
                 <span className={`text-2xl ${card.color}`}>{card.icon}</span>
                 <div className={`w-2 h-2 rounded-full ${card.dot} animate-pulse`} />
@@ -244,26 +242,17 @@ function Dashboard() {
                 whileHover={{ y: -6, scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="relative overflow-hidden p-5 rounded-2xl text-left cursor-pointer"
-                style={{
-                  background: item.gradient,
-                  boxShadow: `0 8px 32px ${item.glow}`,
-                }}
+                style={{ background: item.gradient, boxShadow: `0 8px 32px ${item.glow}` }}
               >
-                {/* OVERLAY */}
                 <div className="absolute inset-0 bg-black/10 dark:bg-black/20" />
-
-                {/* TAG */}
                 <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black tracking-wider">
                   {item.tag}
                 </div>
-
                 <div className="relative z-10">
                   <div className="text-2xl text-white mb-4 drop-shadow">{item.icon}</div>
                   <h3 className="text-base font-black text-white mb-1">{item.title}</h3>
                   <p className="text-xs text-white/75">{item.subtitle}</p>
                 </div>
-
-                {/* SHINE EFFECT */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
               </motion.button>
             ))}
