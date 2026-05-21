@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../api/axios";
 import DashboardLayout from "../layouts/DashboardLayout";
 import useSessionTracker from "../hooks/useSessionTracker";
 import { generateQuiz } from "../api/quizApi";
@@ -62,8 +62,8 @@ function Quiz() {
   const saveQuizResult = async (score, total) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:8000/api/analytics/quiz-result",
+      await API.post(
+        "/analytics/quiz-result",
         { subject: "General", score, total },
         { headers: { Authorization: `Bearer ${token}` } }
       );
