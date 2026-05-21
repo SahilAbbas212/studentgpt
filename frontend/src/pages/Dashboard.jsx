@@ -33,7 +33,6 @@ function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // ✅ Fixed — added missing API call
         const token = localStorage.getItem("token");
         const res = await API.get("/analytics/", {
           headers: { Authorization: `Bearer ${token}` }
@@ -154,43 +153,43 @@ function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="px-6 py-8 max-w-7xl mx-auto">
+      <div className="px-3 sm:px-6 py-4 sm:py-8 max-w-7xl mx-auto w-full">
 
         {/* HERO */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10 relative overflow-hidden rounded-3xl p-8 md:p-10 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none"
+          className="mb-6 sm:mb-10 relative overflow-hidden rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 shadow-sm"
         >
           <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600" />
-          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 dark:bg-cyan-500/10 blur-[80px] rounded-full pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 dark:bg-purple-500/10 blur-[80px] rounded-full pointer-events-none" />
+          <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-cyan-500/5 dark:bg-cyan-500/10 blur-[80px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-40 sm:w-64 h-40 sm:h-64 bg-purple-500/5 dark:bg-purple-500/10 blur-[80px] rounded-full pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs font-black tracking-widest mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[10px] sm:text-xs font-black tracking-widest mb-3 sm:mb-4">
                 <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
                 AI PRODUCTIVITY SYSTEM ACTIVE
               </div>
-              <h1 className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 text-transparent bg-clip-text">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 text-transparent bg-clip-text">
                 {timeOfDay} 👋
               </h1>
-              <p className="text-slate-500 dark:text-slate-400 text-base">
+              <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base">
                 {user?.name || user?.email || "Student"} — Your AI academic OS is ready.
               </p>
             </div>
 
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex gap-2 sm:gap-4 flex-wrap">
               {[
                 { icon: <FaTrophy />, value: `${stats.avg_score}%`, label: "Score", color: "text-yellow-500" },
                 { icon: <FaChartLine />, value: `${stats.total_hours}h`, label: "Studied", color: "text-cyan-500" },
                 { icon: <FaStar />, value: stats.total_quizzes, label: "Quizzes", color: "text-purple-500" },
               ].map((s, i) => (
-                <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
-                  <span className={`text-lg ${s.color}`}>{s.icon}</span>
+                <div key={i} className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                  <span className={`text-base sm:text-lg ${s.color}`}>{s.icon}</span>
                   <div>
-                    <div className="font-black text-slate-900 dark:text-white text-lg leading-none">{loadingStats ? "..." : s.value}</div>
-                    <div className="text-slate-400 text-xs mt-0.5">{s.label}</div>
+                    <div className="font-black text-slate-900 dark:text-white text-base sm:text-lg leading-none">{loadingStats ? "..." : s.value}</div>
+                    <div className="text-slate-400 text-[10px] sm:text-xs mt-0.5">{s.label}</div>
                   </div>
                 </div>
               ))}
@@ -199,7 +198,7 @@ function Dashboard() {
         </motion.div>
 
         {/* STAT CARDS */}
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-10">
           {statCards.map((card, i) => (
             <motion.div
               key={i}
@@ -207,31 +206,31 @@ function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
               whileHover={{ y: -4, scale: 1.02 }}
-              className={`p-5 rounded-2xl border ${card.bg} ${card.border} shadow-sm dark:shadow-none relative overflow-hidden`}
+              className={`p-4 sm:p-5 rounded-xl sm:rounded-2xl border ${card.bg} ${card.border} shadow-sm relative overflow-hidden`}
             >
-              <div className="flex items-center justify-between mb-4">
-                <span className={`text-2xl ${card.color}`}>{card.icon}</span>
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <span className={`text-xl sm:text-2xl ${card.color}`}>{card.icon}</span>
                 <div className={`w-2 h-2 rounded-full ${card.dot} animate-pulse`} />
               </div>
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-1">
+              <h2 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white mb-1">
                 {card.value}
               </h2>
-              <p className="text-sm font-bold text-slate-600 dark:text-slate-300">{card.label}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{card.sub}</p>
+              <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300">{card.label}</p>
+              <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 hidden sm:block">{card.sub}</p>
             </motion.div>
           ))}
         </div>
 
         {/* QUICK ACTIONS */}
-        <div className="mb-10">
-          <div className="flex items-center gap-2 mb-5">
+        <div className="mb-6 sm:mb-10">
+          <div className="flex items-center gap-2 mb-4 sm:mb-5">
             <span className="text-amber-500">⚡</span>
-            <h2 className="text-xl font-black text-slate-800 dark:text-white">Quick Actions</h2>
-            <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-black">
+            <h2 className="text-base sm:text-xl font-black text-slate-800 dark:text-white">Quick Actions</h2>
+            <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs font-black">
               4 TOOLS
             </span>
           </div>
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             {quickActions.map((item, i) => (
               <motion.button
                 key={i}
@@ -241,19 +240,18 @@ function Dashboard() {
                 transition={{ delay: 0.3 + i * 0.08 }}
                 whileHover={{ y: -6, scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="relative overflow-hidden p-5 rounded-2xl text-left cursor-pointer"
+                className="relative overflow-hidden p-4 sm:p-5 rounded-xl sm:rounded-2xl text-left cursor-pointer w-full"
                 style={{ background: item.gradient, boxShadow: `0 8px 32px ${item.glow}` }}
               >
                 <div className="absolute inset-0 bg-black/10 dark:bg-black/20" />
-                <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black tracking-wider">
+                <div className="absolute top-2 right-2 sm:top-3 sm:right-3 px-1.5 sm:px-2 py-0.5 rounded-full bg-white/20 text-white text-[8px] sm:text-[10px] font-black tracking-wider">
                   {item.tag}
                 </div>
                 <div className="relative z-10">
-                  <div className="text-2xl text-white mb-4 drop-shadow">{item.icon}</div>
-                  <h3 className="text-base font-black text-white mb-1">{item.title}</h3>
-                  <p className="text-xs text-white/75">{item.subtitle}</p>
+                  <div className="text-xl sm:text-2xl text-white mb-2 sm:mb-4 drop-shadow">{item.icon}</div>
+                  <h3 className="text-sm sm:text-base font-black text-white mb-0.5 sm:mb-1">{item.title}</h3>
+                  <p className="text-[10px] sm:text-xs text-white/75 hidden sm:block">{item.subtitle}</p>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
               </motion.button>
             ))}
           </div>
@@ -264,29 +262,28 @@ function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="rounded-2xl p-6 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-indigo-500/15 shadow-sm dark:shadow-none"
+          className="rounded-xl sm:rounded-2xl p-4 sm:p-6 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-indigo-500/15 shadow-sm"
         >
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-4 sm:mb-6">
             <span>🧠</span>
-            <h2 className="text-xl font-black text-slate-800 dark:text-white">AI Insights</h2>
-            <span className="ml-2 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs font-black">
+            <h2 className="text-base sm:text-xl font-black text-slate-800 dark:text-white">AI Insights</h2>
+            <span className="ml-2 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[10px] sm:text-xs font-black">
               LIVE
             </span>
           </div>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {getInsights().map((insight, i) => (
               <motion.div
                 key={i}
                 whileHover={{ scale: 1.02, y: -2 }}
-                className={`p-5 rounded-xl border ${insight.bg} ${insight.border} relative overflow-hidden`}
+                className={`p-4 sm:p-5 rounded-xl border ${insight.bg} ${insight.border} relative overflow-hidden`}
               >
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-current opacity-30" />
-                <div className={`text-xs font-black tracking-widest mb-2 ${insight.color}`}>
+                <div className={`text-[10px] sm:text-xs font-black tracking-widest mb-2 ${insight.color}`}>
                   {insight.label}
                 </div>
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">{insight.icon}</span>
-                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-medium">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <span className="text-xl sm:text-2xl">{insight.icon}</span>
+                  <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-medium">
                     {insight.text}
                   </p>
                 </div>
