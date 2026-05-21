@@ -1,5 +1,4 @@
 import {
-
     FaHome,
     FaStickyNote,
     FaBook,
@@ -9,8 +8,8 @@ import {
     FaCalendarAlt,
     FaCog,
     FaClock,
-    FaSignOutAlt
-
+    FaSignOutAlt,
+    FaTimes
 } from "react-icons/fa";
 
 import {
@@ -22,25 +21,21 @@ import {
     motion
 } from "framer-motion";
 
-function Sidebar() {
+function Sidebar({ closeSidebar }) {
 
-    const location =
-        useLocation();
+    const location = useLocation();
 
     // ✅ USER
 
-    const user =
-    JSON.parse(
+    const user = JSON.parse(
         localStorage.getItem("user")
     );
 
     const userName =
-    user?.name || "Student";
+        user?.name || "Student";
 
     const firstLetter =
-    userName
-    .charAt(0)
-    .toUpperCase();
+        userName.charAt(0).toUpperCase();
 
     // ✅ MENU
 
@@ -104,23 +99,46 @@ function Sidebar() {
 
     return (
 
-        <div className="
-            relative
-            h-screen
-            w-[380px]
-            glass
-            border-r
-            border-white/10
-            px-8
-            py-10
-            flex
-            flex-col
-            justify-between
-            sticky
-            top-0
-            shadow-[0_0_80px_rgba(34,211,238,0.08)]
-            backdrop-blur-3xl
-        ">
+        <div
+            className="
+                relative
+                h-screen
+                w-[290px]
+                md:w-[340px]
+                glass
+                border-r
+                border-white/10
+                px-4
+                md:px-8
+                py-6
+                md:py-10
+                flex
+                flex-col
+                justify-between
+                sticky
+                top-0
+                shadow-[0_0_80px_rgba(34,211,238,0.08)]
+                backdrop-blur-3xl
+                overflow-y-auto
+            "
+        >
+
+            {/* MOBILE CLOSE BUTTON */}
+
+            <button
+                onClick={closeSidebar}
+                className="
+                    md:hidden
+                    absolute
+                    top-5
+                    right-5
+                    text-white
+                    text-2xl
+                    z-50
+                "
+            >
+                <FaTimes />
+            </button>
 
             {/* BACKGROUND GLOWS */}
 
@@ -128,10 +146,10 @@ function Sidebar() {
                 absolute
                 top-0
                 left-0
-                w-96
-                h-96
+                w-72
+                h-72
                 bg-cyan-500/10
-                blur-[160px]
+                blur-[120px]
                 rounded-full
             " />
 
@@ -139,25 +157,20 @@ function Sidebar() {
                 absolute
                 bottom-0
                 right-0
-                w-96
-                h-96
+                w-72
+                h-72
                 bg-purple-500/10
-                blur-[180px]
+                blur-[140px]
                 rounded-full
             " />
 
             {/* MAIN CONTENT */}
 
-            <div className="
-                relative
-                z-10
-            ">
+            <div className="relative z-10">
 
                 {/* LOGO */}
 
-                <div className="
-                    mb-16
-                ">
+                <div className="mb-10 md:mb-16">
 
                     <motion.h1
 
@@ -166,7 +179,8 @@ function Sidebar() {
                         }}
 
                         className="
-                            text-[3.2rem]
+                            text-4xl
+                            md:text-[3.2rem]
                             leading-none
                             tracking-[-2px]
                             font-black
@@ -189,7 +203,8 @@ function Sidebar() {
                         text-slate-500
                         dark:text-slate-400
                         mt-3
-                        text-sm
+                        text-xs
+                        md:text-sm
                         tracking-wide
                     ">
 
@@ -204,46 +219,51 @@ function Sidebar() {
                 <div className="
                     flex
                     flex-col
-                    gap-5
+                    gap-3
+                    md:gap-5
                 ">
 
                     {
-                        menu.map(
-                            (
-                                item,
-                                index
-                            ) => (
+                        menu.map((item, index) => (
 
-                                <motion.div
+                            <motion.div
 
-                                    whileHover={{
-                                        scale: 1.04,
-                                        x: 6
-                                    }}
+                                whileHover={{
+                                    scale: 1.02,
+                                    x: 4
+                                }}
 
-                                    key={index}
-                                >
+                                key={index}
+                            >
 
-                                    <Link
+                                <Link
 
-                                        to={item.path}
+                                    to={item.path}
 
-                                        className={`
-                                            relative
-                                            overflow-hidden
-                                            flex
-                                            items-center
-                                            gap-5
-                                            px-7
-                                            py-5
-                                            rounded-[1.7rem]
-                                            transition-all
-                                            duration-500
-                                            font-bold
-                                            text-xl
+                                    onClick={() =>
+                                        closeSidebar?.()
+                                    }
 
-                                            ${
-                                                location.pathname === item.path
+                                    className={`
+                                        relative
+                                        overflow-hidden
+                                        flex
+                                        items-center
+                                        gap-4
+                                        px-5
+                                        md:px-7
+                                        py-4
+                                        md:py-5
+                                        rounded-2xl
+                                        md:rounded-[1.7rem]
+                                        transition-all
+                                        duration-500
+                                        font-bold
+                                        text-base
+                                        md:text-xl
+
+                                        ${
+                                            location.pathname === item.path
 
                                                 ?
 
@@ -252,70 +272,55 @@ function Sidebar() {
                                                 :
 
                                                 "text-slate-600 dark:text-slate-400 hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
-                                            }
-                                        `}
-                                    >
-
-                                        {/* ACTIVE LINE */}
-
-                                        {
-                                            location.pathname === item.path && (
-
-                                                <div className="
-                                                    absolute
-                                                    left-0
-                                                    top-4
-                                                    bottom-4
-                                                    w-1.5
-                                                    rounded-full
-                                                    bg-white
-                                                " />
-                                            )
                                         }
+                                    `}
+                                >
 
-                                        {/* ACTIVE GLOW */}
+                                    {/* ACTIVE LINE */}
 
-                                        {
-                                            location.pathname === item.path && (
+                                    {
+                                        location.pathname === item.path && (
 
-                                                <div className="
-                                                    absolute
-                                                    inset-0
-                                                    bg-white/10
-                                                    backdrop-blur-xl
-                                                " />
-                                            )
-                                        }
+                                            <div className="
+                                                absolute
+                                                left-0
+                                                top-3
+                                                bottom-3
+                                                w-1.5
+                                                rounded-full
+                                                bg-white
+                                            " />
+                                        )
+                                    }
 
-                                        {/* ICON */}
+                                    {/* ICON */}
 
-                                        <div className="
-                                            relative
-                                            z-10
-                                            text-3xl
-                                            drop-shadow-lg
-                                        ">
+                                    <div className="
+                                        relative
+                                        z-10
+                                        text-xl
+                                        md:text-2xl
+                                    ">
 
-                                            {item.icon}
+                                        {item.icon}
 
-                                        </div>
+                                    </div>
 
-                                        {/* NAME */}
+                                    {/* NAME */}
 
-                                        <div className="
-                                            relative
-                                            z-10
-                                        ">
+                                    <div className="
+                                        relative
+                                        z-10
+                                    ">
 
-                                            {item.name}
+                                        {item.name}
 
-                                        </div>
+                                    </div>
 
-                                    </Link>
+                                </Link>
 
-                                </motion.div>
-                            )
-                        )
+                            </motion.div>
+                        ))
                     }
 
                 </div>
@@ -327,19 +332,21 @@ function Sidebar() {
             <motion.div
 
                 whileHover={{
-                    scale: 1.03,
-                    y: -3
+                    scale: 1.02,
+                    y: -2
                 }}
 
                 className="
                     relative
                     overflow-hidden
                     glass
-                    rounded-[2.3rem]
-                    p-6
+                    rounded-[2rem]
+                    p-4
+                    md:p-6
                     border
                     border-cyan-500/20
                     shadow-[0_0_50px_rgba(34,211,238,0.12)]
+                    mt-8
                 "
             >
 
@@ -356,18 +363,15 @@ function Sidebar() {
 
                 {/* CONTENT */}
 
-                <div className="
-                    relative
-                    z-10
-                ">
+                <div className="relative z-10">
 
                     {/* USER INFO */}
 
                     <div className="
                         flex
                         items-center
-                        gap-5
-                        mb-6
+                        gap-4
+                        mb-5
                     ">
 
                         {/* AVATAR */}
@@ -376,13 +380,15 @@ function Sidebar() {
 
                             whileHover={{
                                 rotate: 8,
-                                scale: 1.08
+                                scale: 1.05
                             }}
 
                             className="
-                                w-20
-                                h-20
-                                rounded-[1.7rem]
+                                w-14
+                                h-14
+                                md:w-20
+                                md:h-20
+                                rounded-2xl
                                 bg-gradient-to-br
                                 from-cyan-500
                                 via-blue-500
@@ -391,9 +397,9 @@ function Sidebar() {
                                 items-center
                                 justify-center
                                 text-white
-                                text-3xl
+                                text-xl
+                                md:text-3xl
                                 font-black
-                                shadow-[0_0_30px_rgba(59,130,246,0.35)]
                             "
                         >
 
@@ -408,7 +414,8 @@ function Sidebar() {
                             <h2 className="
                                 text-slate-900
                                 dark:text-white
-                                text-2xl
+                                text-lg
+                                md:text-2xl
                                 font-black
                                 leading-tight
                             ">
@@ -420,9 +427,9 @@ function Sidebar() {
                             <p className="
                                 text-slate-500
                                 dark:text-slate-400
-                                text-sm
-                                mt-2
-                                tracking-wide
+                                text-xs
+                                md:text-sm
+                                mt-1
                             ">
 
                                 ✨ Premium AI User
@@ -441,8 +448,7 @@ function Sidebar() {
 
                             localStorage.clear();
 
-                            window.location.href =
-                            "/login";
+                            window.location.href = "/login";
                         }}
 
                         className="
@@ -451,18 +457,19 @@ function Sidebar() {
                             items-center
                             justify-center
                             gap-3
-                            px-6
-                            py-5
-                            rounded-[1.7rem]
+                            px-4
+                            py-4
+                            rounded-2xl
                             bg-gradient-to-r
                             from-red-500
                             via-pink-500
                             to-orange-500
                             text-white
-                            font-black
-                            text-xl
-                            hover:scale-[1.03]
-                            hover:shadow-[0_0_40px_rgba(239,68,68,0.35)]
+                            font-bold
+                            md:font-black
+                            text-sm
+                            md:text-lg
+                            hover:scale-[1.02]
                             transition-all
                             duration-500
                         "

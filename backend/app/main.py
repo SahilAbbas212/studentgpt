@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import auth, notes, flashcards, quiz, rag_chat, timetable, upload, analytics
 from app.database import Base, engine
 from app.api.analytics import QuizResult, SessionLog
+from app.api.auth import OTPRecord   # ← NEW: ensures table is created
 
 app = FastAPI()
 
