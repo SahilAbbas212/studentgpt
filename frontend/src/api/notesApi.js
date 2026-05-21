@@ -1,13 +1,11 @@
 import API from "./axios";
 
-// ---------------- FILE UPLOAD ----------------
-
 export const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
 
   const response = await API.post(
-    "/api/upload/",
+    "/upload/",
     formData,
     {
       headers: {
@@ -19,11 +17,9 @@ export const uploadFile = async (file) => {
   return response.data;
 };
 
-// ---------------- GENERATE NOTES ----------------
-
 export const generateNotes = async (text) => {
   const response = await API.post(
-    "/api/notes/",
+    "/notes/",
     { text }
   );
 

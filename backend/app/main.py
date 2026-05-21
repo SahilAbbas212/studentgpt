@@ -8,13 +8,12 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Create ALL tables on startup including analytics
 Base.metadata.create_all(bind=engine)
 
 app.include_router(auth.router,        prefix="/api/auth")

@@ -8,7 +8,7 @@ export const generateTimetable = async (
   routine,
   preferences
 ) => {
-  const response = await API.post("/api/timetable/", {
+  const response = await API.post("/timetable/", {
     subjects,
     hours_per_day,
     goal,
