@@ -13,15 +13,13 @@ router = APIRouter()
 SECRET_KEY = "studentgptsecret"
 ALGORITHM = "HS256"
 
+# ✅ Fixed — removed bcrypt__rounds which causes the 72 byte error
 pwd_context = CryptContext(
     schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12
+    deprecated="auto"
 )
 
 logger = logging.getLogger(__name__)
-
-# ── MODELS ──────────────────────────────
 
 class RegisterRequest(BaseModel):
     name: str
@@ -32,12 +30,8 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
-# ── TOKEN ───────────────────────────────
-
 def create_token(data: dict):
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-
-# ── REGISTER ────────────────────────────
 
 @router.post("/register")
 def register(data: RegisterRequest, db: Session = Depends(get_db)):
@@ -52,8 +46,8 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
                 detail="Email already exists"
             )
 
-        # ✅ force string, trim whitespace
-        password = str(data.password).strip()
+        # ✅ trim + limit to 50 chars to avoid bcrypt 72 byte issue
+        password = str(data.password).strip()[:50]
 
         if len(password) < 4:
             raise HTTPException(
@@ -74,7 +68,6 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
         db.refresh(new_user)
 
         logger.info(f"New user registered: {new_user.email}")
-
         return {"message": "User registered successfully"}
 
     except HTTPException:
@@ -87,13 +80,12 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
             detail=f"Registration failed: {str(e)}"
         )
 
-# ── LOGIN ───────────────────────────────
-
 @router.post("/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     try:
         email = str(data.email).strip().lower()
-        password = str(data.password).strip()
+        # ✅ same trim + limit as register
+        password = str(data.password).strip()[:50]
 
         user = db.query(User).filter(
             User.email == email
@@ -119,7 +111,6 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
         })
 
         logger.info(f"User logged in: {user.email}")
-
         return {
             "token": token,
             "user": {
