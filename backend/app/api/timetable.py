@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from jose import jwt
 from app.ai.groq_service import generate_notes
 from app.database import get_db
 from app.models.user import SavedTimetable
@@ -10,6 +11,9 @@ import re
 
 router = APIRouter()
 
+SECRET_KEY = "studentgptsecret"
+ALGORITHM = "HS256"
+
 class TimetableRequest(BaseModel):
     subjects: list[str]
     hours_per_day: int
@@ -17,6 +21,9 @@ class TimetableRequest(BaseModel):
     syllabus: str
     routine: str
     preferences: list[str]
+
+class SaveTimetableRequest(BaseModel):
+    timetable: list
 
 def extract_json(text):
     match = re.search(r"\[.*\]", text, re.DOTALL)
@@ -189,19 +196,17 @@ FINAL CHECK BEFORE RETURNING:
         return {"timetable": fallback_timetable(total_days, data.hours_per_day), "total_days": total_days}
 
 
-class SaveTimetableRequest(BaseModel):
-    timetable: list
-
 @router.post("/save")
 def save_timetable(data: SaveTimetableRequest, request: Request, db: Session = Depends(get_db)):
     try:
         auth = request.headers.get("Authorization", "")
         token = auth.replace("Bearer ", "")
-        from jose import jwt
-        payload = jwt.decode(token, "studentgptsecret", algorithms=["HS256"])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
+    except HTTPException:
+        raise
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -219,8 +224,7 @@ def get_saved(request: Request, db: Session = Depends(get_db)):
     try:
         auth = request.headers.get("Authorization", "")
         token = auth.replace("Bearer ", "")
-        from jose import jwt
-        payload = jwt.decode(token, "studentgptsecret", algorithms=["HS256"])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
         if not user_id:
             return {"timetable": None}
