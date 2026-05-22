@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.ai.groq_service import generate_notes
 from app.database import get_db
 from app.models.user import SavedTimetable
-from app.api.auth import get_current_user
+
 import json
 import re
 
@@ -193,17 +193,39 @@ class SaveTimetableRequest(BaseModel):
     timetable: list
 
 @router.post("/save")
-def save_timetable(data: SaveTimetableRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    existing = db.query(SavedTimetable).filter_by(user_id=user.id).first()
+def save_timetable(data: SaveTimetableRequest, request: Request, db: Session = Depends(get_db)):
+    try:
+        auth = request.headers.get("Authorization", "")
+        token = auth.replace("Bearer ", "")
+        from jose import jwt
+        payload = jwt.decode(token, "studentgptsecret", algorithms=["HS256"])
+        user_id = payload.get("user_id")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    existing = db.query(SavedTimetable).filter_by(user_id=user_id).first()
     if existing:
         existing.timetable_data = data.timetable
     else:
-        db.add(SavedTimetable(user_id=user.id, timetable_data=data.timetable))
+        db.add(SavedTimetable(user_id=user_id, timetable_data=data.timetable))
     db.commit()
     return {"message": "Saved"}
 
 
 @router.get("/saved")
-def get_saved(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    saved = db.query(SavedTimetable).filter_by(user_id=user.id).first()
+def get_saved(request: Request, db: Session = Depends(get_db)):
+    try:
+        auth = request.headers.get("Authorization", "")
+        token = auth.replace("Bearer ", "")
+        from jose import jwt
+        payload = jwt.decode(token, "studentgptsecret", algorithms=["HS256"])
+        user_id = payload.get("user_id")
+        if not user_id:
+            return {"timetable": None}
+    except Exception:
+        return {"timetable": None}
+
+    saved = db.query(SavedTimetable).filter_by(user_id=user_id).first()
     return {"timetable": saved.timetable_data if saved else None}
