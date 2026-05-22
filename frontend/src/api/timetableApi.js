@@ -20,15 +20,20 @@ export const generateTimetable = async (
 };
 
 export const saveTimetable = async (timetable) => {
-  const res = await API.post("/timetable/save", { timetable }, {
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-  });
+  const token = localStorage.getItem("token");
+  const res = await API.post(
+    "/timetable/save",
+    { timetable },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
   return res.data;
 };
 
 export const getSavedTimetable = async () => {
-  const res = await API.get("/timetable/saved", {
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-  });
+  const token = localStorage.getItem("token");
+  const res = await API.get(
+    "/timetable/saved",
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
   return res.data;
 };
