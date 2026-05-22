@@ -1,6 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from app.ai.groq_service import generate_notes
+from app.database import get_db
+from app.models.user import SavedTimetable
+from app.api.auth import get_current_user
 import json
 import re
 
@@ -32,7 +36,6 @@ def get_day_name(day_index: int) -> str:
     return days[day_index % 7]
 
 def fallback_timetable(total_days: int = 7, hours: int = 4):
-    """Generate fallback with correct hours per day"""
     subjects_cycle = ["Math", "Physics", "Revision", "English", "Computer"]
     topics_cycle   = [
         "Chapter 1 - Introduction",
@@ -44,7 +47,6 @@ def fallback_timetable(total_days: int = 7, hours: int = 4):
     result = []
     for i in range(total_days):
         day_label = f"Day {i+1} ({get_day_name(i)})"
-        # Session 1: 2 hours
         result.append({
             "day"     : day_label,
             "subject" : subjects_cycle[i % len(subjects_cycle)],
@@ -52,7 +54,6 @@ def fallback_timetable(total_days: int = 7, hours: int = 4):
             "time"    : "4:00 PM - 6:00 PM",
             "priority": "High",
         })
-        # Session 2: remaining hours
         if hours > 2:
             end_hour = 6 + (hours - 2)
             result.append({
@@ -186,3 +187,23 @@ FINAL CHECK BEFORE RETURNING:
     except Exception as e:
         print("TIMETABLE ERROR:", e)
         return {"timetable": fallback_timetable(total_days, data.hours_per_day), "total_days": total_days}
+
+
+class SaveTimetableRequest(BaseModel):
+    timetable: list
+
+@router.post("/save")
+def save_timetable(data: SaveTimetableRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    existing = db.query(SavedTimetable).filter_by(user_id=user.id).first()
+    if existing:
+        existing.timetable_data = data.timetable
+    else:
+        db.add(SavedTimetable(user_id=user.id, timetable_data=data.timetable))
+    db.commit()
+    return {"message": "Saved"}
+
+
+@router.get("/saved")
+def get_saved(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    saved = db.query(SavedTimetable).filter_by(user_id=user.id).first()
+    return {"timetable": saved.timetable_data if saved else None}

@@ -18,3 +18,17 @@ export const generateTimetable = async (
   });
   return response.data;
 };
+
+export const saveTimetable = async (timetable) => {
+  const res = await API.post("/timetable/save", { timetable }, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+  });
+  return res.data;
+};
+
+export const getSavedTimetable = async () => {
+  const res = await API.get("/timetable/saved", {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+  });
+  return res.data;
+};

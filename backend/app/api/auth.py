@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from sqlalchemy import Column, Integer, String, DateTime
-from jose import jwt
+from jose import jwt, JWTError
 from pydantic import BaseModel
 import bcrypt
 import logging
@@ -20,6 +21,7 @@ router = APIRouter()
 SECRET_KEY = "studentgptsecret"
 ALGORITHM = "HS256"
 logger = logging.getLogger(__name__)
+security = HTTPBearer()
 
 # ─── OTP Table ───────────────────────────────────────────────────────────────
 
@@ -28,7 +30,7 @@ class OTPRecord(Base):
     id       = Column(Integer, primary_key=True, index=True)
     email    = Column(String, index=True)
     name     = Column(String)
-    password = Column(String)   # hashed, stored temporarily
+    password = Column(String)
     otp      = Column(String)
     expires_at = Column(DateTime)
 
@@ -114,18 +116,34 @@ def send_otp_email(to_email: str, name: str, otp: str):
         logger.error(f"Failed to send email: {e}")
         raise HTTPException(status_code=500, detail="Failed to send OTP email. Check email config.")
 
+# ─── get_current_user ────────────────────────────────────────────────────────
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("user_id")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
 # ─── Routes ──────────────────────────────────────────────────────────────────
 
 @router.post("/send-otp")
 def send_otp(data: SendOTPRequest, db: Session = Depends(get_db)):
-    """Step 1 — validate input, store pending OTP, send email."""
     email = data.email.strip().lower()
 
-    # Check if already registered
     if db.query(User).filter(User.email == email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # Delete any old OTP records for this email
     db.query(OTPRecord).filter(OTPRecord.email == email).delete()
 
     otp = generate_otp()
@@ -147,7 +165,6 @@ def send_otp(data: SendOTPRequest, db: Session = Depends(get_db)):
 
 @router.post("/verify-otp")
 def verify_otp(data: VerifyOTPRequest, db: Session = Depends(get_db)):
-    """Step 2 — verify OTP and create the real user account."""
     email = data.email.strip().lower()
 
     record = db.query(OTPRecord).filter(OTPRecord.email == email).first()
@@ -163,14 +180,13 @@ def verify_otp(data: VerifyOTPRequest, db: Session = Depends(get_db)):
     if record.otp != data.otp.strip():
         raise HTTPException(status_code=400, detail="Incorrect OTP. Please try again.")
 
-    # OTP valid — create the real user
     new_user = User(
         name     = record.name,
         email    = record.email,
-        password = record.password   # already hashed
+        password = record.password
     )
     db.add(new_user)
-    db.delete(record)   # cleanup OTP record
+    db.delete(record)
     db.commit()
     db.refresh(new_user)
 
