@@ -26,13 +26,15 @@ function Timetable() {
   const preferenceOptions = ["Daily Revision", "Focus Weak Subjects", "Pomodoro Study", "Weekend Intensive", "Include Breaks"];
 
   // Load saved timetable when page opens
-  useEffect(() => {
+ useEffect(() => {
     const loadSaved = async () => {
       try {
         const data = await getSavedTimetable();
         if (data.timetable && data.timetable.length > 0) {
           setTimetable(data.timetable);
           setTotalDays(data.timetable.length);
+          await requestPermission();
+          scheduleSessionReminders({ week: buildWeekMap(data.timetable) });
         }
       } catch (err) {
         console.log("No saved timetable found");
@@ -399,5 +401,6 @@ function Timetable() {
     </DashboardLayout>
   );
 }
+
 
 export default Timetable;
